@@ -66,8 +66,8 @@ class Merger(object):
                 tmp_file = pd.read_csv(x, header=header, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
-                all_file.to_sql(select, con=self.engine, flavor="sqlite",
-                                index=False, if_exists="append")
+                all_file.to_sql(select, con=self.engine, index=False,
+                                if_exists="append")
             else:
                 # have to collapse columns, means reading into pandas
                 tmp_file = pd.read_csv(x, header=header, chunksize=10000,
@@ -79,8 +79,8 @@ class Merger(object):
                 else:
                     TypeError("Multiple headers selected, yet dataframe is not multi-indexed")
                 # write to database
-                all_file.to_sql(select, con=self.engine, flavor="sqlite",
-                                index=False, if_exists="append")
+                all_file.to_sql(select, con=self.engine, index=False,
+                                if_exists="append")
 
 
     def to_db_agg(self, select="DATA", header=0, by="ImageNumber",
@@ -112,8 +112,8 @@ class Merger(object):
             if header == 0:
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method, **kwargs)
-                tmp_agg.to_sql(select+"_agg", con=self.engine, flavor="sqlite",
-                               index=False, if_exists="append")
+                tmp_agg.to_sql(select+"_agg", con=self.engine, index=False,
+                               if_exists="append")
             else:
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
                 # collapse multi-indexed columns
@@ -122,7 +122,7 @@ class Merger(object):
                 else:
                     TypeError("Multiple headers selected, yet dataframe is not multi-indexed")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method, **kwargs)
-                tmp_agg.to_sql(select + "_agg", con=self.engine, flavor="sqlite",
-                               index=False, if_exists="append")
+                tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
+                               if_exists="append")
 
 
