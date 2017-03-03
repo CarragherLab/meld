@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from tqdm import tqdm
-import colfuncs
-import utils
+from morar import colfuncs
+from morar import utils
 
 
 class Merger(object):
@@ -40,7 +40,7 @@ class Merger(object):
 
     # create sqlite database
     def create_db(self, location, db_name="results"):
-        self.db_handle = "sqlite:///%s/%s.sqlite" % (location, db_name)
+        self.db_handle = "sqlite:///{}/{}.sqlite".format(location, db_name)
         self.engine = create_engine(self.db_handle)
 
 
@@ -77,7 +77,8 @@ class Merger(object):
                 if isinstance(all_file.columns, pd.core.index.MultiIndex):
                     all_file.columns = colfuncs.collapse_cols(all_file)
                 else:
-                    TypeError("Multiple headers selected, yet dataframe is not multi-indexed")
+                    TypeError("Multiple headers selected, yet dataframe is not \
+                               multi-indexed")
                 # write to database
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
@@ -111,7 +112,8 @@ class Merger(object):
         for x in tqdm(file_paths):
             if header == 0:
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
-                tmp_agg = utils.aggregate(tmp_file, on=by, method=method, **kwargs)
+                tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
+                                          **kwargs)
                 tmp_agg.to_sql(select+"_agg", con=self.engine, index=False,
                                if_exists="append")
             else:
@@ -120,8 +122,10 @@ class Merger(object):
                 if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
-                    TypeError("Multiple headers selected, yet dataframe is not multi-indexed")
-                tmp_agg = utils.aggregate(tmp_file, on=by, method=method, **kwargs)
+                    TypeError("Multiple headers selected, yet dataframe is not\
+                               multi-indexed")
+                tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
+                                          **kwargs)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
 
