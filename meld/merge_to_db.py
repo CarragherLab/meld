@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from tqdm import tqdm
-from morar import colfuncs
-from morar import utils
+from meld import colfuncs
+from meld import utils
 
 
 class Merger(object):
@@ -105,7 +105,7 @@ class Merger(object):
         **kwargs : additional arguments to pandas.read_csv and aggregate
         """
         # filter files
-        file_paths = [f for f in self.file_paths if f.endswith(select+".csv")]
+        file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
         # check there are files matching select argument
         if len(file_paths) == 0:
             raise ValueError("No files found matching '{}'".format(select))
@@ -114,7 +114,7 @@ class Merger(object):
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
-                tmp_agg.to_sql(select+"_agg", con=self.engine, index=False,
+                tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
             else:
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
