@@ -40,6 +40,21 @@ class Merger(object):
 
     # create sqlite database
     def create_db(self, location, db_name="results"):
+        """
+        creates database
+
+        Parameters:
+        -----------
+        location : string
+            Location where to create the database
+        db_name : string
+            What to call the database at location
+        
+        Note:
+        ------
+        If a database already exists with the same location and name then
+        this will act on the existing database rather than overwriting
+        """
         self.db_handle = "sqlite:///{}/{}.sqlite".format(location, db_name)
         self.engine = create_engine(self.db_handle)
 
