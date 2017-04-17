@@ -137,7 +137,7 @@ class Merger(object):
                 if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
-                    TypeError("Multiple headers selected, yet dataframe is not\
+                    raise TypeError("Multiple headers selected, yet dataframe is not\
                                multi-indexed")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
