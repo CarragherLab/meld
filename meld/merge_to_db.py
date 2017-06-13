@@ -58,6 +58,9 @@ class Merger(object):
         if not db_name.endswith(".sqlite"):
             db_name += ".sqlite"
         db_path = os.path.join(location, db_name)
+        if os.path.is_file(db_path):
+            msg = "{}' already exists, database will be extended".format(db_path)
+            raise Warning(msg)
         self.db_handle = "sqlite:///{}".format(db_path)
         self.engine = create_engine(self.db_handle)
 
