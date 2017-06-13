@@ -49,13 +49,16 @@ class Merger(object):
             Location where to create the database
         db_name : string
             What to call the database at location
-        
+
         Note:
         ------
         If a database already exists with the same location and name then
         this will act on the existing database rather than overwriting
         """
-        self.db_handle = "sqlite:///{}/{}.sqlite".format(location, db_name)
+        if not db_name.endswith(".sqlite"):
+            db_name += ".sqlite"
+        db_path = os.path.join([location, db_name])
+        self.db_handle = "sqlite:///{}".format(db_path)
         self.engine = create_engine(self.db_handle)
 
 
