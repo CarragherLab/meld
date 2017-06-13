@@ -98,7 +98,7 @@ class Merger(object):
                 if isinstance(all_file.columns, pd.core.index.MultiIndex):
                     all_file.columns = colfuncs.collapse_cols(all_file)
                 else:
-                    TypeError("Multiple headers selected, yet dataframe is not \
+                    ValueError("Multiple headers selected, yet dataframe is not \
                                multi-indexed")
                 # write to database
                 all_file.to_sql(select, con=self.engine, index=False,
@@ -143,7 +143,7 @@ class Merger(object):
                 if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
-                    raise TypeError("Multiple headers selected, yet dataframe is not\
+                    raise ValueError("Multiple headers selected, yet dataframe is not\
                                multi-indexed")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
