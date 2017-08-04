@@ -86,3 +86,21 @@ merger.to_db_agg(select="DATA", header=[0,1], by="ImageNumber", agg_func="mean")
 
 This will create a table called `DATA_agg` in the database, with a row per
 image.
+
+
+## Potential problems
+
+If you're collapsing multi-indexed columns and aggregting data, you have to specify the column you wish to aggregate by with the collapsed name.  
+For example:
+
+|    Image        |        Image            | ... |
+|:---------------:|:-----------------------:|-----|
+| **ImageNumber** | **Intensity_channel_1** | ... |
+| 1               | 0.758                   | ... |
+| ...             | ...                     | ... |
+
+You would aggregate by `Image_ImageNumber`, as the `Image` and `ImageNumber` column headers will be collapsed before aggregation.
+
+```python
+merger.to_db_agg(select="DATA", header=[0,1], by="Image_ImageNumber")
+```
