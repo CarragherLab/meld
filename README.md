@@ -90,7 +90,7 @@ image.
 
 ## Potential problems
 
-If you're collapsing multi-indexed columns and aggregting data, you have to specify the column you wish to aggregate by with the collapsed name.  
+If you're collapsing multi-indexed columns and aggregating data, you have to specify the column you wish to aggregate by with the collapsed name.  
 For example:
 
 |    Image        |        Image            | ... |
