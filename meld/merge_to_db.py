@@ -1,6 +1,9 @@
+"""
+Class to merge output files to tables within an sqlite database
+"""
+
 import os
 import pandas as pd
-import numpy as np
 from sqlalchemy import create_engine
 from tqdm import tqdm
 from meld import colfuncs
@@ -58,7 +61,7 @@ class Merger(object):
         if not db_name.endswith(".sqlite"):
             db_name += ".sqlite"
         db_path = os.path.join(location, db_name)
-        if os.path.is_file(db_path):
+        if os.path.isfile(db_path):
             msg = "{}' already exists, database will be extended".format(db_path)
             raise Warning(msg)
         self.db_handle = "sqlite:///{}".format(db_path)
