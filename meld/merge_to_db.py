@@ -98,14 +98,14 @@ class Merger(object):
                 if isinstance(all_file.columns, pd.core.index.MultiIndex):
                     all_file.columns = colfuncs.collapse_cols(all_file)
                 else:
-                    ValueError("Multiple headers selected, yet dataframe is not \
-                               multi-indexed")
+                    msg = "Multiple headers selected, yet dataframe is not multi-indexed"
+                    raise ValueError(msg)
                 # write to database
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
 
 
-    def to_db_agg(self, select="DATA", header=0, by="ImageNumber",
+    def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
                   method="median", prefix=False, **kwargs):
         """
         Parameters
@@ -117,6 +117,8 @@ class Merger(object):
             the number of header rows.
         by : string
             the column by which to group the data by.
+            NOTE: if collapsing multiindexed columns this will have to be the
+                  name of collapsed column. i.e ImageNumber => Image_ImageNumber
         method : string (default="median")
             method by which to average groups, median or mean
         prefix : Boolean
@@ -140,11 +142,12 @@ class Merger(object):
             else:
                 tmp_file = pd.read_csv(x, header=header, **kwargs)
                 # collapse multi-indexed columns
+                # NOTE will aggregate on the collapsed column name
                 if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
                     raise ValueError("Multiple headers selected, yet dataframe is not\
-                               multi-indexed")
+                                      multi-indexed")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
