@@ -36,6 +36,7 @@ class Merger(object):
             for filename in files:
                 filepath = os.path.join(root, filename)
                 file_paths.append(filepath)
+            #TODO: check indentation of this, doesn't look right
             self.file_paths = file_paths
         self.db_handle = None
         self.engine = None
@@ -71,6 +72,8 @@ class Merger(object):
     # write csv files to database
     def to_db(self, select="DATA", header=0, **kwargs):
         """
+        Append files to a database table.
+
         Parameters
         -----------
         select : string
@@ -84,17 +87,17 @@ class Merger(object):
         # check there are files matching select argument
         if len(file_paths) == 0:
             raise ValueError("No files found matching '{}'".format(select))
-        for x in tqdm(file_paths):
+        for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 # dont need to collapse headers
-                tmp_file = pd.read_csv(x, header=header, chunksize=10000,
+                tmp_file = pd.read_csv(indv_file, header=header, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
             else:
                 # have to collapse columns, means reading into pandas
-                tmp_file = pd.read_csv(x, header=header, chunksize=10000,
+                tmp_file = pd.read_csv(indv_file, header=header, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
                 # collapse column names if multi-indexed
@@ -111,6 +114,8 @@ class Merger(object):
     def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
                   method="median", prefix=False, **kwargs):
         """
+        Append files to database table after aggregating replicates.
+
         Parameters
         -----------
         select : string
@@ -135,25 +140,26 @@ class Merger(object):
         # check there are files matching select argument
         if len(file_paths) == 0:
             raise ValueError("No files found matching '{}'".format(select))
-        for x in tqdm(file_paths):
-            if header == 0:
-                tmp_file = pd.read_csv(x, header=header, **kwargs)
+        for indv_file in tqdm(file_paths):
+            if header == 0 or header == [0]:
+                tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
-                                          **kwargs)
+                                          prefix=prefix)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
             else:
-                tmp_file = pd.read_csv(x, header=header, **kwargs)
+                tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
                 # collapse multi-indexed columns
                 # NOTE will aggregate on the collapsed column name
                 if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
+                    # user has passed multiple header rows, but pandas doesn't
+                    # think the dataframe has multi-indexed columns so return
+                    # an error
                     raise ValueError("Multiple headers selected, yet dataframe is not\
                                       multi-indexed")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
-
-
