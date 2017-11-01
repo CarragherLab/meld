@@ -26,7 +26,8 @@ results/
 ```
 
 ```python
-merger = ResultsDirectory("/results")
+import meld
+merger = meld.Merger("/results")
 ```
 
 We then want to tell `merge_to_db` where to store the database.
