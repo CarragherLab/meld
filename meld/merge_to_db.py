@@ -3,6 +3,7 @@ Class to merge output files to tables within an sqlite database
 """
 
 import os
+import warnings
 import pandas as pd
 from sqlalchemy import create_engine
 from tqdm import tqdm
@@ -41,8 +42,6 @@ class Merger(object):
         self.db_handle = None
         self.engine = None
 
-
-    # create sqlite database
     def create_db(self, location, db_name="results"):
         """
         creates database
@@ -64,12 +63,10 @@ class Merger(object):
         db_path = os.path.join(location, db_name)
         if os.path.isfile(db_path):
             msg = "{}' already exists, database will be extended".format(db_path)
-            raise Warning(msg)
+            warnings.warn(msg)
         self.db_handle = "sqlite:///{}".format(db_path)
         self.engine = create_engine(self.db_handle)
 
-
-    # write csv files to database
     def to_db(self, select="DATA", header=0, **kwargs):
         """
         Append files to a database table.
@@ -87,6 +84,7 @@ class Merger(object):
         # check there are files matching select argument
         if len(file_paths) == 0:
             raise ValueError("No files found matching '{}'".format(select))
+        # get shape of data for efficient appending to the database if using odo
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 # dont need to collapse headers
@@ -109,7 +107,6 @@ class Merger(object):
                 # write to database
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
-
 
     def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
                   method="median", prefix=False, **kwargs):
