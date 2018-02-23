@@ -32,13 +32,16 @@ class Merger(object):
         """
         Get full filepaths of all files in a directory, including sub-directories
         """
+        if not os.path.isdir(directory):
+            raise NotADirectoryError("{} is not a directory".format(directory))
         file_paths = []
         for root, _, files in os.walk(directory):
             for filename in files:
                 filepath = os.path.join(root, filename)
                 file_paths.append(filepath)
-            #TODO: check indentation of this, doesn't look right
             self.file_paths = file_paths
+        if len(self.file_paths) == 0:
+            raise RuntimeError("{} does not contain any files".format(directory))
         self.db_handle = None
         self.engine = None
 
@@ -62,7 +65,7 @@ class Merger(object):
         If a database already exists with the same location and name then
         this will act on the existing database rather than overwriting
         """
-        if not db_name.endswith(".sqlite"):
+        if not db_name.lower().endswith((".sqlite", ".sqlite3")):
             db_name += ".sqlite"
         db_path = os.path.join(location, db_name)
         if os.path.isfile(db_path):
@@ -87,12 +90,14 @@ class Merger(object):
         --------
         Nothing, writes to databases or raises an Error
         """
+        if self.engine is None or self.db_handle is None:
+            msg = "no database found, need to call create_db() first"
+            raise RuntimeError(msg)
         # filter files
         file_paths = [f for f in self.file_paths if f.endswith(select+".csv")]
         # check there are files matching select argument
         if len(file_paths) == 0:
             raise ValueError("No files found matching '{}'".format(select))
-        # get shape of data for efficient appending to the database if using odo
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 # dont need to collapse headers
@@ -102,7 +107,7 @@ class Merger(object):
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
             else:
-                # have to collapse columns, means reading into pandas
+                # have to collapse columns
                 tmp_file = pd.read_csv(indv_file, header=header, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
@@ -110,8 +115,8 @@ class Merger(object):
                 if isinstance(all_file.columns, pd.core.index.MultiIndex):
                     all_file.columns = colfuncs.collapse_cols(all_file)
                 else:
-                    msg = "Multiple headers selected, yet dataframe is not multi-indexed"
-                    raise ValueError(msg)
+                    msg = "Multiple headers selected, yet dataframe is not multi-indexed, try with 'header=0'"
+                    raise HeaderError(msg)
                 # write to database
                 all_file.to_sql(select, con=self.engine, index=False,
                                 if_exists="append")
@@ -144,6 +149,9 @@ class Merger(object):
         --------
         Nothing, writes to database or raises an Error
         """
+        if self.engine is None or self.db_handle is None:
+            msg = "no database found, need to call create_db() first"
+            raise RuntimeError(msg)
         # filter files
         file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
         # check there are files matching select argument
@@ -166,9 +174,19 @@ class Merger(object):
                     # user has passed multiple header rows, but pandas doesn't
                     # think the dataframe has multi-indexed columns so return
                     # an error
-                    raise ValueError("Multiple headers selected, yet dataframe is not\
-                                      multi-indexed")
+                    raise HeaderError("Multiple headers selected, yet dataframe\
+                                       is not multi-indexed, try with 'header=0'")
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
+
+
+class HeaderError(Exception):
+    """Custom error class"""
+    pass
+
+
+class NotADirectoryError(Exception):
+    """Doesn't exist in python2, create our own"""
+    pass
