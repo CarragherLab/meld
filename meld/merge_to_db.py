@@ -5,7 +5,7 @@ Class to merge output files to tables within an sqlite database
 import os
 import warnings
 import pandas as pd
-from sqlalchemy import create_engine
+import sqlalchemy
 from tqdm import tqdm
 from meld import colfuncs
 from meld import utils
@@ -65,7 +65,7 @@ class Merger(object):
             msg = "{}' already exists, database will be extended".format(db_path)
             warnings.warn(msg)
         self.db_handle = "sqlite:///{}".format(db_path)
-        self.engine = create_engine(self.db_handle)
+        self.engine = sqlalchemy.create_engine(self.db_handle)
 
     def to_db(self, select="DATA", header=0, **kwargs):
         """
