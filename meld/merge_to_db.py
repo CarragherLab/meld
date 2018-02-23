@@ -44,14 +44,18 @@ class Merger(object):
 
     def create_db(self, location, db_name="results"):
         """
-        creates database
+        Creates an sqlite database named `db_name` at `location`.
 
         Parameters:
         -----------
         location : string
-            Location where to create the database
-        db_name : string
+            filepath to directory in which the database will be created.
+        db_name : string (default="results")
             What to call the database at location
+
+        Returns:
+        --------
+        Nothing
 
         Note:
         ------
@@ -78,6 +82,10 @@ class Merger(object):
         header : int or list
             the number of header rows.
         **kwargs : additional arguments to pandas.read_csv
+
+        Returns:
+        --------
+        Nothing, writes to databases or raises an Error
         """
         # filter files
         file_paths = [f for f in self.file_paths if f.endswith(select+".csv")]
@@ -131,6 +139,10 @@ class Merger(object):
             and metadata needs to be a prefix, or can just be contained within
             the column name
         **kwargs : additional arguments to pandas.read_csv and aggregate
+
+        Returns:
+        --------
+        Nothing, writes to database or raises an Error
         """
         # filter files
         file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
