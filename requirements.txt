@@ -1,0 +1,4 @@
+sqlalchemy>=1.0
+pandas>=0.16
+tqdm>=4.0
+numpy>=1.10
