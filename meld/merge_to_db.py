@@ -217,6 +217,38 @@ class Merger(object):
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
 
+    def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
+                    method="median", prefix=False, save_location, **kwargs):
+        tmp_files = []
+        file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
+        # check there are files matching select argument
+        if len(file_paths) == 0:
+            raise ValueError("No files found matching '{}'".format(select))
+        for indv_file in tqdm(file_paths):
+            if header == 0 or header == [0]:
+                tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
+                tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
+                                          prefix=prefix)
+            else:
+                tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
+                # collapse multi-indexed columns
+                # NOTE will aggregate on the collapsed column name
+                if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
+                    tmp_file.columns = colfuncs.collapse_cols(tmp_file)
+                else:
+                    # user has passed multiple header rows, but pandas doesn't
+                    # think the dataframe has multi-indexed columns so return
+                    # an error
+                    raise HeaderError(
+                        "Multiple headers selected, yet dataframe is not "
+                        + "multi-indexed, try with 'header=0'"
+                    )
+                tmp_file = utils.aggregate(tmp_file, on=by, method=method,
+                                          **kwargs)
+            tmp_files.append(tmp_file)
+        concat_df = pd.concat([tmp_file])
+        concat_df.to_csv(save_location, index=False)
+            
 
 class HeaderError(Exception):
     """Custom error class"""
