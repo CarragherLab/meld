@@ -217,8 +217,8 @@ class Merger(object):
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
 
-    def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
-                    method="median", prefix=False, save_location, **kwargs):
+    def to_db_agg(self, save_location, select="DATA", header=0, by="Image_ImageNumber",
+                    method="median", prefix=False, **kwargs):
         tmp_files = []
         file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
         # check there are files matching select argument
@@ -248,7 +248,6 @@ class Merger(object):
             tmp_files.append(tmp_file)
         concat_df = pd.concat([tmp_file])
         concat_df.to_csv(save_location, index=False)
-            
 
 class HeaderError(Exception):
     """Custom error class"""
