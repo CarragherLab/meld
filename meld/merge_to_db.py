@@ -243,10 +243,10 @@ class Merger(object):
                         "Multiple headers selected, yet dataframe is not "
                         + "multi-indexed, try with 'header=0'"
                     )
-                tmp_file = utils.aggregate(tmp_file, on=by, method=method,
+                tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
-            tmp_files.append(tmp_file)
-        concat_df = pd.concat([tmp_file])
+            tmp_files.append(tmp_agg)
+        concat_df = pd.concat(tmp_files, copy=False)
         concat_df.to_csv(save_location, index=False)
 
 class HeaderError(Exception):
