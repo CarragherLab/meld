@@ -217,7 +217,7 @@ class Merger(object):
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
                                if_exists="append")
 
-    def to_db_agg(self, save_location, select="DATA", header=0, by="Image_ImageNumber",
+    def to_csv_agg(self, save_location, select="DATA", header=0, by="Image_ImageNumber",
                     method="median", prefix=False, **kwargs):
         tmp_files = []
         file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
