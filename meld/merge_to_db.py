@@ -219,6 +219,36 @@ class Merger(object):
 
     def to_csv_agg(self, save_location, select="DATA", header=0, by="Image_ImageNumber",
                     method="median", prefix=False, **kwargs):
+        """
+        Bodge to store data in a csv file. Useful if your data contains more
+        than 999 columns, which is the maximum number of columns you can
+        insert into an sqlite database at once.
+
+        Paramters:
+        ----------
+        save_location: string
+            path to where and what to call the resulting csv file
+        select : string
+            the name of the .csv file, this will also be the prefix of the
+            database table name.
+        header : int or list
+            the number of header rows.
+        by : string
+            the column by which to group the data by.
+            NOTE: if collapsing multiindexed columns this will have to be the
+                  name of collapsed column. i.e ImageNumber => Image_ImageNumber
+        method : string (default="median")
+            method by which to average groups, median or mean
+        prefix : Boolean
+            whether the metadata label required for discerning featuredata
+            and metadata needs to be a prefix, or can just be contained within
+            the column name
+        **kwargs : additional arguments to pandas.read_csv and aggregate
+
+        Returns:
+        --------
+        nothing, saves file to disk at 'save_location'
+        """
         tmp_files = []
         file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
         # check there are files matching select argument
