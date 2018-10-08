@@ -79,10 +79,10 @@ merger.to_db_agg(select="DATA", header=[0,1], by="ImageNumber")
 This will group the data by ImageNumber and create a row with a median value
 for each image.
 
-We can change the aggregation function by passing the `agg_func` argument.
+We can change the aggregation function by passing the `method` argument.
 
 ```python
-merger.to_db_agg(select="DATA", header=[0,1], by="ImageNumber", agg_func="mean")
+merger.to_db_agg(select="DATA", header=[0,1], by="ImageNumber", method="mean")
 ```
 
 This will create a table called `DATA_agg` in the database, with a row per
