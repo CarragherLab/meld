@@ -122,7 +122,7 @@ class Merger(object):
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 # dont need to collapse headers
-                tmp_file = pd.read_csv(indv_file, header=header, chunksize=10000,
+                tmp_file = pd.read_csv(indv_file, header=0, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
                 all_file.to_sql(select, con=self.engine, index=False,
@@ -193,7 +193,7 @@ class Merger(object):
             raise ValueError("No files found matching '{}'".format(select))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
-                tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
+                tmp_file = pd.read_csv(indv_file, header=0, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           prefix=prefix)
                 tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
@@ -256,7 +256,6 @@ class Merger(object):
             raise ValueError("No files found matching '{}'".format(select))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
-                # pandas doesn't like header=[0], so convert to int
                 tmp_file = pd.read_csv(indv_file, header=0, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           prefix=prefix)
