@@ -256,6 +256,8 @@ class Merger(object):
             raise ValueError("No files found matching '{}'".format(select))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
+                # pandas doesn't like header=[0], so convert to int
+                header = 0
                 tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           prefix=prefix)
