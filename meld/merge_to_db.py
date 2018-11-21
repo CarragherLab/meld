@@ -80,7 +80,7 @@ class Merger(object):
         then an sqlalchemy error will be returned.
         """
         if not db_name.lower().endswith((".sqlite", ".sqlite3")):
-            db_name += ".sqlite"
+            db_name = "{}.sqlite".format(db_name)
         db_path = os.path.join(location, db_name)
         if os.path.isfile(db_path):
             msg = "{}' already exists, database will be extended".format(db_path)
@@ -111,21 +111,21 @@ class Merger(object):
         under the same name exists, but has different column headers then an
         sqlalchemy error will be raised.
         """
-        if self.engine is None or self.db_handle is None:
-            msg = "no database found, need to call create_db() first"
-            raise RuntimeError(msg)
+        self.check_database()
+        file_name = self.get_file_name(select)
+        table_name = self.get_table_name(select)
         # filter files
-        file_paths = [f for f in self.file_paths if f.endswith(select+".csv")]
-        # check there are files matching select argument
+        file_paths = [f for f in self.file_paths if f.endswith(file_name)]
+        # check there are files matching file_name argument
         if len(file_paths) == 0:
-            raise ValueError("No files found matching '{}'".format(select))
+            raise ValueError("No files found matching '{}'".format(file_name))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 # dont need to collapse headers
                 tmp_file = pd.read_csv(indv_file, header=0, chunksize=10000,
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
-                all_file.to_sql(select, con=self.engine, index=False,
+                all_file.to_sql(table_name, con=self.engine, index=False,
                                 if_exists="append")
             else:
                 # have to collapse columns
@@ -141,7 +141,7 @@ class Merger(object):
                         + "multi-indexed, try with 'header=0'"
                     )
                 # write to database
-                all_file.to_sql(select, con=self.engine, index=False,
+                all_file.to_sql(table_name, con=self.engine, index=False,
                                 if_exists="append")
 
     def to_db_agg(self, select="DATA", header=0, by="Image_ImageNumber",
@@ -183,20 +183,20 @@ class Merger(object):
         with '_agg', e.g if `select='DATA'', then the table will be named
         `DATA_agg`.
         """
-        if self.engine is None or self.db_handle is None:
-            msg = "no database found, need to call create_db() first"
-            raise RuntimeError(msg)
+        self.check_database()
+        file_name = self.get_file_name(select)
+        table_name = "{}_agg".format(self.get_table_name(select))
         # filter files
-        file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
-        # check there are files matching select argument
+        file_paths = [f for f in self.file_paths if f.endswith(file_name)]
+        # check there are files matching file_name argument
         if len(file_paths) == 0:
-            raise ValueError("No files found matching '{}'".format(select))
+            raise ValueError("No files found matching '{}'".format(file_name))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 tmp_file = pd.read_csv(indv_file, header=0, **kwargs)
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           prefix=prefix)
-                tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
+                tmp_agg.to_sql(table_name, con=self.engine, index=False,
                                if_exists="append")
             else:
                 tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
@@ -214,7 +214,7 @@ class Merger(object):
                     )
                 tmp_agg = utils.aggregate(tmp_file, on=by, method=method,
                                           **kwargs)
-                tmp_agg.to_sql(select + "_agg", con=self.engine, index=False,
+                tmp_agg.to_sql(table_name, con=self.engine, index=False,
                                if_exists="append")
 
     def to_csv_agg(self, save_location, select="DATA", header=0, by="Image_ImageNumber",
@@ -249,11 +249,12 @@ class Merger(object):
         --------
         nothing, saves file to disk at 'save_location'
         """
+        file_name = self.get_file_name(select)
         tmp_files = []
-        file_paths = [f for f in self.file_paths if f.endswith(select + ".csv")]
+        file_paths = [f for f in self.file_paths if f.endswith(file_name)]
         # check there are files matching select argument
         if len(file_paths) == 0:
-            raise ValueError("No files found matching '{}'".format(select))
+            raise ValueError("No files found matching '{}'".format(file_name))
         for indv_file in tqdm(file_paths):
             if header == 0 or header == [0]:
                 tmp_file = pd.read_csv(indv_file, header=0, **kwargs)
@@ -278,6 +279,42 @@ class Merger(object):
             tmp_files.append(tmp_agg)
         concat_df = pd.concat(tmp_files, copy=False)
         concat_df.to_csv(save_location, index=False)
+
+    @staticmethod
+    def get_table_name(select_name):
+        """
+        When given `select` in the `to_db*()` methods, this will create
+        a name suitable for the database table. So if `select` ends with
+        .csv this will be omitted.
+
+        Parameters:
+        -----------
+        select_name: string
+
+        Returns:
+        --------
+        string
+        """
+        if select_name.endwith(".csv"):
+            return select_name.replace(".csv", "")
+        else:
+            return select_name
+
+    @staticmethod
+    def get_file_name(select_name):
+        """
+        docstring
+        """
+        if select_name.endswith(".csv"):
+            return select_name
+        else:
+            return "{}.csv".format(select_name)
+
+    def check_database(self):
+        if self.engine is None or self.db_handle is None:
+            msg = "no database found, need to call create_db() first"
+            raise RuntimeError(msg)
+
 
 class HeaderError(Exception):
     """Custom error class"""
