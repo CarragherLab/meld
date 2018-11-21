@@ -303,7 +303,16 @@ class Merger(object):
     @staticmethod
     def get_file_name(select_name):
         """
-        docstring
+        When given `select` in the `to_db*()` methods, this will create
+        ensure it has a file extension if not already there.
+
+        Parameters:
+        -----------
+        select_name: string
+
+        Returns:
+        --------
+        string
         """
         if select_name.endswith(".csv"):
             return select_name
