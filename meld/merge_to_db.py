@@ -295,7 +295,7 @@ class Merger(object):
         --------
         string
         """
-        if select_name.endwith(".csv"):
+        if select_name.endswith(".csv"):
             return select_name.replace(".csv", "")
         else:
             return select_name
