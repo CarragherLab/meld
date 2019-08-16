@@ -16,7 +16,7 @@ def aggregate(data, on, method="median", **kwargs):
     on : string or list of strings
         column(s) with which to group by and aggregate the dataset.
     method : string (default="median")
-        method to average each group. options = "median" or "mean"
+        method to average each group. options = "median","mean" or "sum"
     **kwargs : additional args to utils.get_metadata / utils.get_featuredata
 
     Returns
@@ -33,6 +33,8 @@ def aggregate(data, on, method="median", **kwargs):
         agg = grouped.aggregate(np.mean)
     if method == "median":
         agg = grouped.aggregate(np.median)
+    if method == "sum":
+        agg = grouped.aggregate(np.sum)
     df_metadata = data[get_metadata(data, **kwargs)].copy()
     # add indexing column to metadata if not already present
     df_metadata[on] = data[on]
