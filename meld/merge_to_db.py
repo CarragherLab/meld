@@ -133,7 +133,7 @@ class Merger(object):
                                        iterator=True, **kwargs)
                 all_file = pd.concat(tmp_file)
                 # collapse column names if multi-indexed
-                if isinstance(all_file.columns, pd.core.index.MultiIndex):
+                if isinstance(all_file.columns, pd.MultiIndex):
                     all_file.columns = colfuncs.collapse_cols(all_file)
                 else:
                     raise HeaderError(
@@ -202,7 +202,7 @@ class Merger(object):
                 tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
                 # collapse multi-indexed columns
                 # NOTE will aggregate on the collapsed column name
-                if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
+                if isinstance(tmp_file.columns, pd.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
                     # user has passed multiple header rows, but pandas doesn't
@@ -264,7 +264,7 @@ class Merger(object):
                 tmp_file = pd.read_csv(indv_file, header=header, **kwargs)
                 # collapse multi-indexed columns
                 # NOTE will aggregate on the collapsed column name
-                if isinstance(tmp_file.columns, pd.core.index.MultiIndex):
+                if isinstance(tmp_file.columns, pd.MultiIndex):
                     tmp_file.columns = colfuncs.collapse_cols(tmp_file)
                 else:
                     # user has passed multiple header rows, but pandas doesn't
